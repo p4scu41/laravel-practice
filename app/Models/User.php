@@ -46,4 +46,9 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+
+    public function tokenCanAny(array $abilities) : bool
+    {
+        return $this->accessToken && count(array_intersect($abilities, $this->accessToken->abilities)) > 0;
+    }
 }

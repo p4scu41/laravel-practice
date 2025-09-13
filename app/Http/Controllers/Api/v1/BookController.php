@@ -8,6 +8,7 @@ use App\Http\Requests\UpdateBookRequest;
 use App\Models\Book;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response as HttpResponse;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Response;
 
 class BookController extends Controller
@@ -17,6 +18,8 @@ class BookController extends Controller
      */
     public function index(Request $request)
     {
+        Gate::authorize('viewAny', Book::class);
+
         $request->validate([
             'per_page' => 'nullable|integer|min:1|max:100',
         ]);
@@ -35,6 +38,8 @@ class BookController extends Controller
      */
     public function store(StoreBookRequest $request)
     {
+        // Gate::authorize('create', Book::class); // Moved to FormRequest
+
         $book = Book::create($request->validated());
 
         return Response::json($book, HttpResponse::HTTP_CREATED);
@@ -45,6 +50,8 @@ class BookController extends Controller
      */
     public function show(Book $book)
     {
+        Gate::authorize('view', $book);
+
         return $book->load('category:id,description');
     }
 
@@ -53,6 +60,8 @@ class BookController extends Controller
      */
     public function update(UpdateBookRequest $request, Book $book)
     {
+        // Gate::authorize('update', $book); // Moved to FormRequest
+
         $book->update($request->validated());
 
         return $book->load('category:id,description');
@@ -63,6 +72,8 @@ class BookController extends Controller
      */
     public function destroy(Book $book)
     {
+        Gate::authorize('delete', $book);
+
         $book->delete();
 
         return $book;

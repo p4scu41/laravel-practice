@@ -30,7 +30,12 @@ function indexJson(array $data): array
 }
 
 beforeEach(function () {
-    Sanctum::actingAs(User::factory()->create());
+    $user = User::factory()->create();
+
+    Sanctum::actingAs($user);
+
+    $user->createToken('token', ['books-admin']);
+    $user->withAccessToken($user->tokens->first());
 });
 
 test('index', function () {
@@ -49,6 +54,22 @@ test('index - Unauthenticated', function () {
     $response = $this->getJson(booksUrl());
 
     $response->assertUnauthorized();
+
+    Exceptions::assertNotReported(AuthenticationException::class);
+});
+
+test('index - wrong ability', function () {
+    Exceptions::fake();
+    $user = User::factory()->create();
+
+    $user->createToken('token', ['guest']);
+    $user->withAccessToken($user->tokens->first());
+
+    Auth::setUser($user);
+
+    $response = $this->getJson(booksUrl());
+
+    $response->assertForbidden();
 
     Exceptions::assertNotReported(AuthenticationException::class);
 });
