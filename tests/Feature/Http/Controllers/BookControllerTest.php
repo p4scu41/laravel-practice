@@ -2,7 +2,11 @@
 
 use App\Models\Book;
 use App\Models\Category;
+use App\Models\User;
+use Illuminate\Auth\AuthenticationException;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Exceptions;
+use Laravel\Sanctum\Sanctum;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 function booksUrl(?string $resource = null): string
@@ -25,13 +29,28 @@ function indexJson(array $data): array
     ];
 }
 
+beforeEach(function () {
+    Sanctum::actingAs(User::factory()->create());
+});
+
 test('index', function () {
     $book = Book::factory()->create();
 
-    $response = $this->get(booksUrl());
+    $response = $this->getJson(booksUrl());
 
     $response->assertOk()
         ->assertJson(indexJson([$book->toArray()]));
+});
+
+test('index - Unauthenticated', function () {
+    Exceptions::fake();
+    Auth::forgetUser();
+
+    $response = $this->getJson(booksUrl());
+
+    $response->assertUnauthorized();
+
+    Exceptions::assertNotReported(AuthenticationException::class);
 });
 
 test('index - filterByCategory', function () {

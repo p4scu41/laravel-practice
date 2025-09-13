@@ -10,10 +10,10 @@ Route::get('/user', function (Request $request) {
 })->middleware('auth:sanctum');
 
 Route::prefix('v1')->group(function () {
-    Route::apiResource('books', BookController::class);
+    Route::apiResource('books', BookController::class)->middleware('auth:sanctum');
 
     Route::prefix('auth')->controller(AuthController::class)->group(function () {
-        Route::post('/login', 'store');
+        Route::post('/login', 'store')->name('login');
         Route::delete('/logout', 'destroy')->middleware('auth:sanctum');
     });
 });
