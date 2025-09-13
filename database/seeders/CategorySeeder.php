@@ -2,20 +2,21 @@
 
 namespace Database\Seeders;
 
+use App\Models\Category;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
-class DatabaseSeeder extends Seeder
+class CategorySeeder extends Seeder
 {
     use WithoutModelEvents;
+
     /**
-     * Seed the application's database.
+     * Run the database seeds.
      */
     public function run(): void
     {
-        $this->call([
-            CategorySeeder::class,
-            BookSeeder::class,
-        ]);
+        Category::factory()
+            ->count(10)
+            ->create();
     }
 }
