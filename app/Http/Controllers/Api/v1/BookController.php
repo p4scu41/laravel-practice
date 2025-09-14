@@ -7,10 +7,14 @@ use App\Http\Requests\StoreBookRequest;
 use App\Http\Requests\UpdateBookRequest;
 use App\Http\Resources\BookResource;
 use App\Jobs\BookJob;
+use App\Mail\BookCreated;
+use App\Mail\BookDeleted;
 use App\Models\Book;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Mail;
 
 class BookController extends Controller
 {
@@ -45,6 +49,8 @@ class BookController extends Controller
 
         BookJob::dispatch($book);
 
+        Mail::to($request->user())->queue((new BookCreated($book))->afterCommit());
+
         return (new BookResource($book))->response()->setStatusCode(Response::HTTP_CREATED);
     }
 
@@ -78,6 +84,8 @@ class BookController extends Controller
         Gate::authorize('delete', $book);
 
         $book->delete();
+
+        Mail::to(Auth::user())->send(new BookDeleted($book));
 
         return new BookResource($book);
     }

@@ -1,12 +1,15 @@
 <?php
 
 use App\Jobs\BookJob;
+use App\Mail\BookCreated;
+use App\Mail\BookDeleted;
 use App\Models\Book;
 use App\Models\Category;
 use App\Models\User;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Exceptions;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Queue;
 use Laravel\Sanctum\Sanctum;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
@@ -93,6 +96,8 @@ test('index - filterByName', function () {
 
 test('store', function () {
     Queue::fake();
+    Mail::fake();
+
     $category = Category::factory()->create();
 
     $attributes = [
@@ -104,6 +109,7 @@ test('store', function () {
     $response = $this->postJson(booksUrl(), $attributes);
 
     Queue::assertPushed(BookJob::class);
+    Mail::assertQueued(BookCreated::class);
 
     $response->assertCreated()
         ->assertJson($attributes);
@@ -154,9 +160,13 @@ test('update', function () {
 });
 
 test('destroy', function () {
+    Mail::fake();
+
     $book = Book::factory()->create();
 
     $response = $this->deleteJson(booksUrl($book->id));
+
+    Mail::assertSent(BookDeleted::class);
 
     $response->assertOk();
 
