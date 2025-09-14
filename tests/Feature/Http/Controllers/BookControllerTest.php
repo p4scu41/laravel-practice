@@ -1,6 +1,9 @@
 <?php
 
+use App\Events\BookRegistered;
+use App\Events\BookRemoved;
 use App\Jobs\BookJob;
+use App\Listeners\BookUpdateInventory;
 use App\Mail\BookCreated;
 use App\Mail\BookDeleted;
 use App\Models\Book;
@@ -9,6 +12,7 @@ use App\Models\User;
 use App\Notifications\BookUpdated;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Exceptions;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Notification;
@@ -99,6 +103,7 @@ test('index - filterByName', function () {
 test('store', function () {
     Queue::fake();
     Mail::fake();
+    Event::fake();
 
     $category = Category::factory()->create();
 
@@ -112,12 +117,14 @@ test('store', function () {
 
     Queue::assertPushed(BookJob::class);
     Mail::assertQueued(BookCreated::class);
+    Event::assertDispatched(BookRegistered::class);
+    Event::assertListening(BookRegistered::class, BookUpdateInventory::class);
 
     $response->assertCreated()
         ->assertJson($attributes);
 });
 
-test('store - validation', function () {
+test('store - validation failed', function () {
     $emptyAttributes = [];
 
     $response = $this->postJson(booksUrl(), $emptyAttributes);
@@ -167,12 +174,15 @@ test('update', function () {
 
 test('destroy', function () {
     Mail::fake();
+    Event::fake();
 
     $book = Book::factory()->create();
 
     $response = $this->deleteJson(booksUrl($book->id));
 
     Mail::assertSent(BookDeleted::class);
+    Event::assertDispatched(BookRemoved::class);
+    Event::assertListening(BookRemoved::class, BookUpdateInventory::class);
 
     $response->assertOk();
 

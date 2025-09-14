@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers\Api\v1;
 
+use App\Events\BookRegistered;
+use App\Events\BookRemoved;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreBookRequest;
 use App\Http\Requests\UpdateBookRequest;
@@ -53,6 +55,8 @@ class BookController extends Controller
 
         Mail::to($request->user())->queue((new BookCreated($book))->afterCommit());
 
+        BookRegistered::dispatch($book);
+
         return (new BookResource($book))->response()->setStatusCode(Response::HTTP_CREATED);
     }
 
@@ -91,6 +95,8 @@ class BookController extends Controller
         $book->delete();
 
         Mail::to(Auth::user())->send(new BookDeleted($book));
+
+        BookRemoved::dispatch($book);
 
         return new BookResource($book);
     }
