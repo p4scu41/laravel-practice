@@ -10,11 +10,13 @@ use App\Jobs\BookJob;
 use App\Mail\BookCreated;
 use App\Mail\BookDeleted;
 use App\Models\Book;
+use App\Notifications\BookUpdated;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Notification;
 
 class BookController extends Controller
 {
@@ -72,6 +74,9 @@ class BookController extends Controller
         // Gate::authorize('update', $book); // Moved to FormRequest
 
         $book->update($request->validated());
+
+        Auth::user()->notify(new BookUpdated($book));
+        // Notification::send(Auth::user(), new BookUpdated($book));
 
         return new BookResource($book->load('category:id,description'));
     }

@@ -6,10 +6,12 @@ use App\Mail\BookDeleted;
 use App\Models\Book;
 use App\Models\Category;
 use App\Models\User;
+use App\Notifications\BookUpdated;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Exceptions;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Queue;
 use Laravel\Sanctum\Sanctum;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
@@ -148,12 +150,16 @@ test('show - not found', function () {
 });
 
 test('update', function () {
+    Notification::fake();
+
     $book = Book::factory()->create();
     $updatedAttributes = [
         'name' => 'Updated Book'
     ];
 
     $response = $this->putJson(booksUrl($book->id), $updatedAttributes);
+
+    Notification::assertSentTo(Auth::user(), BookUpdated::class);
 
     $response->assertSuccessful()
         ->assertJson($updatedAttributes);

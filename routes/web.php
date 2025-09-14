@@ -3,6 +3,8 @@
 use App\Mail\BookCreated;
 use App\Mail\BookDeleted;
 use App\Models\Book;
+use App\Models\User;
+use App\Notifications\BookUpdated;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -12,4 +14,8 @@ Route::get('/', function () {
 Route::get('/mail', function () {
     // return (new BookCreated(Book::first()))->render();
     return (new BookDeleted(Book::first()))->render();
+});
+
+Route::get('/notification', function () {
+    return (new BookUpdated(Book::first()))->toMail(User::first());
 });
