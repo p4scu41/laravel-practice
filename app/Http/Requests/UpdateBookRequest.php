@@ -26,7 +26,7 @@ class UpdateBookRequest extends FormRequest
         return [
             'category_id' => 'nullable|exists:categories,id',
             'name' => ['nullable','max:255', Rule::unique('books')->ignore($this->route('book'))],
-            'published_at' => 'nullable|date',
+            'published_at' => 'nullable|date_format:Y-m-d',
         ];
     }
 }

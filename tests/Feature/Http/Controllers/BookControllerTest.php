@@ -14,21 +14,6 @@ function booksUrl(?string $resource = null): string
     return "/api/v1/books/$resource";
 }
 
-function indexJson(array $data): array
-{
-    return [
-        "current_page" => 1,
-        "data" => $data,
-        "from" => 1,
-        "last_page" => 1,
-        "next_page_url" => null,
-        "per_page" => 10,
-        "prev_page_url" => null,
-        "to" => 1,
-        "total" => 1
-    ];
-}
-
 beforeEach(function () {
     $user = User::factory()->create();
 
@@ -44,7 +29,11 @@ test('index', function () {
     $response = $this->getJson(booksUrl());
 
     $response->assertOk()
-        ->assertJson(indexJson([$book->toArray()]));
+        ->assertJson([
+            'data' => [
+                $book->toArray(),
+            ],
+        ]);
 });
 
 test('index - Unauthenticated', function () {
@@ -80,7 +69,11 @@ test('index - filterByCategory', function () {
     $response = $this->getJson(booksUrl(), ['category_id' => $book->category_id]);
 
     $response->assertOk()
-        ->assertJson(indexJson([$book->toArray()]));
+        ->assertJson([
+            'data' => [
+                $book->toArray(),
+            ],
+        ]);
 });
 
 test('index - filterByName', function () {
@@ -89,7 +82,11 @@ test('index - filterByName', function () {
     $response = $this->getJson(booksUrl(), ['name' => $book->name]);
 
     $response->assertOk()
-        ->assertJson(indexJson([$book->toArray()]));
+        ->assertJson([
+            'data' => [
+                $book->toArray(),
+            ],
+        ]);
 });
 
 test('store', function () {

@@ -5,16 +5,16 @@ namespace App\Http\Controllers\Api\v1;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreBookRequest;
 use App\Http\Requests\UpdateBookRequest;
+use App\Http\Resources\BookResource;
 use App\Models\Book;
 use Illuminate\Http\Request;
-use Illuminate\Http\Response as HttpResponse;
+use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Gate;
-use Illuminate\Support\Facades\Response;
 
 class BookController extends Controller
 {
     /**
-     * Display a listing of the resource.
+     * index
      */
     public function index(Request $request)
     {
@@ -30,11 +30,11 @@ class BookController extends Controller
 
         $request->whenHas('name', fn(string $name) => $booksQuery->filterByName($name));
 
-        return $booksQuery->paginate($request->integer('per_page', 10));
+        return BookResource::collection($booksQuery->paginate($request->integer('per_page', 10)));
     }
 
     /**
-     * Store a newly created resource in storage.
+     * store
      */
     public function store(StoreBookRequest $request)
     {
@@ -42,21 +42,21 @@ class BookController extends Controller
 
         $book = Book::create($request->validated());
 
-        return Response::json($book, HttpResponse::HTTP_CREATED);
+        return (new BookResource($book))->response()->setStatusCode(Response::HTTP_CREATED);
     }
 
     /**
-     * Display the specified resource.
+     * show
      */
     public function show(Book $book)
     {
         Gate::authorize('view', $book);
 
-        return $book->load('category:id,description');
+        return new BookResource($book->load('category:id,description'));
     }
 
     /**
-     * Update the specified resource in storage.
+     * update
      */
     public function update(UpdateBookRequest $request, Book $book)
     {
@@ -64,11 +64,11 @@ class BookController extends Controller
 
         $book->update($request->validated());
 
-        return $book->load('category:id,description');
+        return new BookResource($book->load('category:id,description'));
     }
 
     /**
-     * Remove the specified resource from storage.
+     * destroy
      */
     public function destroy(Book $book)
     {
@@ -76,6 +76,6 @@ class BookController extends Controller
 
         $book->delete();
 
-        return $book;
+        return new BookResource($book);
     }
 }

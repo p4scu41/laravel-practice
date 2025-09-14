@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\Response;
 class AuthController extends Controller
 {
     /**
-     * Store a newly created resource in storage.
+     * login
      */
     public function store(Request $request)
     {
@@ -30,7 +30,7 @@ class AuthController extends Controller
     }
 
     /**
-     * Remove the specified resource from storage.
+     * logout
      */
     public function destroy()
     {
