@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreBookRequest;
 use App\Http\Requests\UpdateBookRequest;
 use App\Http\Resources\BookResource;
+use App\Jobs\BookJob;
 use App\Models\Book;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -41,6 +42,8 @@ class BookController extends Controller
         // Gate::authorize('create', Book::class); // Moved to FormRequest
 
         $book = Book::create($request->validated());
+
+        BookJob::dispatch($book);
 
         return (new BookResource($book))->response()->setStatusCode(Response::HTTP_CREATED);
     }
