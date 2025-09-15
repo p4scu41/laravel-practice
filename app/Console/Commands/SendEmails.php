@@ -31,6 +31,6 @@ class SendEmails extends Command implements PromptsForMissingInput
         \Log::info(static::class, $arguments);
 
         $this->info('Sent emails successfully.');
-        $this->fail('Sent emails failed.');
+        // $this->fail('Sent emails failed.');
     }
 }
