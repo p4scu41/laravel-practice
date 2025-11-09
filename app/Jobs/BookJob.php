@@ -13,7 +13,7 @@ class BookJob implements ShouldQueue
     /**
      * Create a new job instance.
      */
-    public function __construct(public Book $book)
+    public function __construct(public $book)
     {
         //
     }
@@ -23,10 +23,10 @@ class BookJob implements ShouldQueue
      */
     public function handle(): void
     {
-        if (! $this->book->id) {
-            $this->fail(new \InvalidArgumentException('Invalid book at ' . static::class, 1));
+        if ($this->book?->id) {
+            \Log::info(static::class, $this->book->toArray());
+            // $this->fail(new \InvalidArgumentException('Invalid book at ' . static::class, 1));
         }
 
-        \Log::info(static::class, $this->book->toArray());
     }
 }

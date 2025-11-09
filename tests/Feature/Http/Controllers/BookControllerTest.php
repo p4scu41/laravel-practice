@@ -122,6 +122,8 @@ test('store', function () {
 
     $response->assertCreated()
         ->assertJson($attributes);
+
+    $this->assertDatabaseHas('books', $attributes);
 });
 
 test('store - validation failed', function () {
@@ -130,7 +132,7 @@ test('store - validation failed', function () {
     $response = $this->postJson(booksUrl(), $emptyAttributes);
 
     $response->assertUnprocessable()
-        ->assertJsonValidationErrors([
+        ->assertInvalid([ // assertJsonValidationErrors
             'category_id',
             'name',
             'published_at',
@@ -149,7 +151,8 @@ test('show', function () {
 test('show - not found', function () {
     Exceptions::fake();
 
-    $response = $this->withHeaders(['Accept' => 'application/json'])->get(booksUrl(1));
+    $response = $this->withHeaders(['Accept' => 'application/json'])
+        ->get(booksUrl(1)); // getJson
 
     $response->assertNotFound();
 
@@ -168,7 +171,7 @@ test('update', function () {
 
     Notification::assertSentTo(Auth::user(), BookUpdated::class);
 
-    $response->assertSuccessful()
+    $response->assertOk()
         ->assertJson($updatedAttributes);
 });
 
